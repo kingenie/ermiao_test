@@ -27,14 +27,14 @@ def register( request ):
 	email = c_data['email']
 	password = c_data['password']
 
-	gravatar_url = get_gravatar_url( email )
-	print gravatar_url
-	# TODO
-
-	Account.objects.create(
+	acc = Account.objects.create(
 		username = username, email = email,
 		password = password, avatar = avatar,
 	)
+
+	gravatar_url = get_gravatar_url( email )
+	acc.avatar_url = gravatar_url
+	acc.save()
 
 	# Redirect to some place
 	return HttpResponseRedirect( 'http://www.ermiao.com' )
