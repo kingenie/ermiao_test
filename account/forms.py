@@ -20,3 +20,8 @@ class AccountForm( forms.Form ):
 
 		return c_data
 
+
+class AvatarForm( forms.Form ):
+	rotate_angle = forms.IntegerField( label = u'旋转角度' )
+	avatar = forms.FileField( label = u'头像' )
+

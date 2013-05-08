@@ -1,0 +1,49 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>上传头像</title>
+		<link rel="shortcut icon" href="http://www.ermiao.com/media/favicon.ico" />
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.9.1.min.js"></script>
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jQueryRotateCompressed.2.2.js"></script>
+		<script type="text/javascript">
+			$( function() {
+				$('#id_avatar').change( function() {
+					if( this.files && this.files[0] ) {
+						var reader = new FileReader();
+
+						reader.onload = function(e) {
+							$('#avatar_thumbnail').attr('src', e.target.result);
+						};
+
+						reader.readAsDataURL( this.files[0] );
+					}
+				});
+			});
+		</script>
+	</head>
+
+	<body>
+		<table>
+			<tr>
+				<td></td>
+				<td>
+					<form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
+						<span>
+							<img id="avatar_thumbnail" src="" width="50" height="50" />
+						</span>
+
+						<input type="file" name="avatar" id="id_avatar" />
+						<input type="text" name="rotate_angle" id="id_rotate_angle" value="0" style="display: none;" />
+					</form>
+				</td>
+			</tr>
+
+			<tr>
+				<td></td>
+				<td><input type="submit" value="确认更新" /></td>
+				<td></td>
+			</tr>
+		</table>
+	</body>
+</html>

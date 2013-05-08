@@ -9,7 +9,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
 from account.models import Account
-from account.forms import AccountForm
+from account.forms import AccountForm, AvatarForm
 
 
 def register( request ):
@@ -38,6 +38,19 @@ def register( request ):
 
 	# Redirect to some place
 	return HttpResponseRedirect( 'http://www.ermiao.com' )
+
+
+def upload_avatar( request ):
+	tpl = 'account/upload_avatar.html'
+
+	if request.method != 'POST':
+		return render( request, tpl, {'form': AvatarForm()} )
+
+	form = AvatarForm( request.POST, request.FILES )
+	if not form.is_valid():
+		return render( request, tpl, {'form': form} )
+
+	return render( request, tpl, {'form': form} )
 
 
 def get_gravatar_url( email ):
