@@ -8,16 +8,52 @@
 		<script type="text/javascript" src="{{ STATIC_URL }}js/jQueryRotateCompressed.2.2.js"></script>
 		<script type="text/javascript">
 			$( function() {
+				var avatar_obj = $('#avatar_thumbnail');
+				var rotate_angle_obj = $('#id_rotate_angle');
+
 				$('#id_avatar').change( function() {
 					if( this.files && this.files[0] ) {
 						var reader = new FileReader();
 
 						reader.onload = function(e) {
-							$('#avatar_thumbnail').attr('src', e.target.result);
+							avatar_obj.attr('src', e.target.result);
 						};
 
 						reader.readAsDataURL( this.files[0] );
+
+						avatar_obj.rotate({
+							angle: 0,
+						});
+						rotate_angle_obj.val('0');
 					}
+				});
+
+				$('button[name="anticlockwise90"]').click( function() {
+					var angle_value = Number( rotate_angle_obj.val() );
+
+					angle_value -= 90;
+					avatar_obj.rotate({
+						angle: angle_value,
+					});
+
+					rotate_angle_obj.val( angle_value );
+					return false;
+				});
+
+				$('button[name="clockwise90"]').click( function() {
+					var angle_value = Number( rotate_angle_obj.val() );
+
+					angle_value += 90;
+					avatar_obj.rotate({
+						angle: angle_value,
+					});
+
+					rotate_angle_obj.val( angle_value );
+					return false;
+				});
+
+				$('input[name="upload"]').click( function() {
+					$('#form').submit();
 				});
 			});
 		</script>
@@ -26,13 +62,17 @@
 	<body>
 		<table>
 			<tr>
-				<td></td>
 				<td>
-					<form action="" method="post" enctype="multipart/form-data">{% csrf_token %}
-						<span>
-							<img id="avatar_thumbnail" src="" width="50" height="50" />
-						</span>
+					<button name="anticlockwise90">逆时针90度</button>
 
+					<span>
+						<img id="avatar_thumbnail" src="" width="50" height="50" />
+					</span>
+
+					<button name="clockwise90">顺时针90度</button>
+				</td>
+				<td>
+					<form id="form" action="" method="post" enctype="multipart/form-data">{% csrf_token %}
 						<input type="file" name="avatar" id="id_avatar" />
 						<input type="text" name="rotate_angle" id="id_rotate_angle" value="0" style="display: none;" />
 					</form>
@@ -40,8 +80,7 @@
 			</tr>
 
 			<tr>
-				<td></td>
-				<td><input type="submit" value="确认更新" /></td>
+				<td style="text-align: center;"><input type="submit" name="upload" value="确认更新" /></td>
 				<td></td>
 			</tr>
 		</table>

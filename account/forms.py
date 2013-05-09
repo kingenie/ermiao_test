@@ -22,6 +22,6 @@ class AccountForm( forms.Form ):
 
 
 class AvatarForm( forms.Form ):
+	avatar = forms.ImageField( label = u'头像' )
 	rotate_angle = forms.IntegerField( label = u'旋转角度' )
-	avatar = forms.FileField( label = u'头像' )
 

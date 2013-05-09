@@ -17,3 +17,9 @@ class Account( models.Model ):
 		email = self.cleaned_data['email']
 		email = email.strip().lower()
 		return email
+
+
+class Avatar( models.Model ):
+	account = models.OneToOneField( Account )
+	avatar_file = models.ImageField( upload_to = 'user_avatar' )
+

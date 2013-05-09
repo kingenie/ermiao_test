@@ -3,6 +3,7 @@
 
 import hashlib
 import urllib
+import Image
 
 from django.conf import settings
 from django.shortcuts import render
@@ -49,6 +50,15 @@ def upload_avatar( request ):
 	form = AvatarForm( request.POST, request.FILES )
 	if not form.is_valid():
 		return render( request, tpl, {'form': form} )
+
+	c_data = form.cleaned_data
+	avatar = c_data['avatar']
+	rotate_angle = c_data['rotate_angle']
+
+	acc = Account.objects.get(id=1) # Just for test
+
+	Avatar.objects.create( account = acc, avatar_file = avatar )
+	# TODO
 
 	return render( request, tpl, {'form': form} )
 
