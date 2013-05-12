@@ -1,16 +1,23 @@
 # coding: utf-8
 
 
-import hashlib
-import urllib
+import json
 import Image
+import urllib
+import urllib2
+import hashlib
+from string import ascii_letters, digits
 
 from django.conf import settings
 from django.shortcuts import render
 from django.http import HttpResponseRedirect
 
-from account.models import Account
+from account.models import Account, Avatar
 from account.forms import AccountForm, AvatarForm
+
+
+SEND_WEIBO_URL = 'https://api.weibo.com/2/statuses/update.json'
+ALPHANUMERIC = digits + ascii_letters
 
 
 def register( request ):
@@ -30,7 +37,7 @@ def register( request ):
 
 	acc = Account.objects.create(
 		username = username, email = email,
-		password = password, avatar = avatar,
+		password = password,
 	)
 
 	gravatar_url = get_gravatar_url( email )
@@ -54,13 +61,84 @@ def upload_avatar( request ):
 	c_data = form.cleaned_data
 	avatar = c_data['avatar']
 	rotate_angle = c_data['rotate_angle']
+	print rotate_angle
 
-	acc = Account.objects.get(id=1) # Just for test
+	acc = Account.objects.get(id = 2) # Just for test
 
-	Avatar.objects.create( account = acc, avatar_file = avatar )
-	# TODO
+	avatar_obj = Avatar.objects.filter( account = acc )
+	if not avatar_obj:
+		avatar_obj = Avatar.objects.create( account = acc,
+				avatar_file_450 = avatar,
+				avatar_file_160 = avatar,
+				avatar_file_140 = avatar,
+			)
+	else:
+		avatar_obj = avatar_obj[0]
+		avatar_obj.avatar_file_450 = avatar
+		avatar_obj.avatar_file_160 = avatar
+		avatar_obj.avatar_file_140 = avatar
+		avatar_obj.save()
 
-	return render( request, tpl, {'form': form} )
+	# Rotate avatar
+	orig_img = Image.open( avatar_obj.avatar_file_450.path )
+	rotated_img = orig_img.rotate( rotate_angle )
+
+	# Save real thumbnails
+	AVATAR_WIDTH_MAP = (
+		( avatar_obj.avatar_file_450, 450 ),
+		( avatar_obj.avatar_file_160, 160 ),
+		( avatar_obj.avatar_file_140, 140 ),
+	)
+	for save_obj, width in AVATAR_WIDTH_MAP:
+		resized_img = resize_image_to_width( rotated_img, width )
+		resized_img.save( save_obj.path )
+
+
+	# Send weibo
+	post_dict = {
+		access_token: access_token,
+		status: 'XXX在鸸鹋动物园(www.ermiao.com)上传了头像',
+	}
+	post_data = urllib.urlencode( post_dict )
+	resp = urllib2.urlopen( SEND_WEIBO_URL, post_data )
+	resp = json.loads( resp.read() )
+
+	if not resp.get('error'):
+		# Save weibo url
+		mid = int(resp['mid'])
+		uid = resp['user']['id']
+		weibo_url = 'weibo.com/%s/%s' % ( uid, base62_encode(mid) )
+		avatar_obj.weibo_url = weibo_url
+		avatar_obj.save()
+
+	return render( request, tpl, {'msg': 'upload success'} )
+
+
+def resize_image_to_width( image_obj, width ):
+	cur_width, cur_height = image_obj.size
+	if cur_width <= width:
+		resized_img = image_obj.copy()
+	else:
+		scale = cur_width * 1.0 / width
+		height = cur_height / scale
+		resized_img = image_obj.resize( (int(width), int(height)), Image.ANTIALIAS )
+
+	return resized_img
+
+
+def base62_encode( num, alphabet = ALPHANUMERIC ):
+	if (num == 0):
+		return alphabet[0]
+
+	arr = []
+	base = len(alphabet)
+	while num:
+		rem = num % base
+		num = num // base
+		arr.append(alphabet[rem])
+
+	arr.reverse()
+	return ''.join(arr)
 
 
 def get_gravatar_url( email ):

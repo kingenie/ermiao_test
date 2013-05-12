@@ -25,3 +25,6 @@ class AvatarForm( forms.Form ):
 	avatar = forms.ImageField( label = u'头像' )
 	rotate_angle = forms.IntegerField( label = u'旋转角度' )
 
+	def clean_rotate_angle( self ):
+		return  - self.cleaned_data['rotate_angle']
+
