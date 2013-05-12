@@ -9,7 +9,7 @@ import hashlib
 from string import ascii_letters, digits
 
 from django.conf import settings
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponseRedirect
 
 from account.models import Account, Avatar
@@ -48,8 +48,10 @@ def register( request ):
 	return HttpResponseRedirect( 'http://www.ermiao.com' )
 
 
-def upload_avatar( request ):
+def upload_avatar( request, user_id ):
 	tpl = 'account/upload_avatar.html'
+
+	acc = get_object_or_404( Account, id = user_id )
 
 	if request.method != 'POST':
 		return render( request, tpl, {'form': AvatarForm()} )
@@ -61,9 +63,6 @@ def upload_avatar( request ):
 	c_data = form.cleaned_data
 	avatar = c_data['avatar']
 	rotate_angle = c_data['rotate_angle']
-	print rotate_angle
-
-	acc = Account.objects.get(id = 2) # Just for test
 
 	avatar_obj = Avatar.objects.filter( account = acc )
 	if not avatar_obj:
@@ -113,6 +112,33 @@ def upload_avatar( request ):
 
 	return render( request, tpl, {'msg': 'upload success'} )
 
+
+def user_profile( request, user_id ):
+	tpl = 'account/user_profile.html'
+
+	acc = get_object_or_404( Account, id = user_id )
+	is_admin = check_admin( acc )
+
+	avatar_obj = Avatar.objects.filter( account = acc )
+	avatar_url = None
+	weibo_url = None
+	if avatar_obj:
+		avatar_obj = avatar_obj[0]
+		avatar_url = avatar_obj.avatar_file_140.url
+		weibo_url = avatar_obj.weibo_url
+
+	ctx = {
+		'account': acc,
+		'avatar_url': avatar_url,
+		'is_admin': is_admin,
+		'weibo_url': weibo_url,
+	}
+	return render( request, tpl, ctx )
+
+
+###################################
+## Functions below are not views
+###################################
 
 def resize_image_to_width( image_obj, width ):
 	cur_width, cur_height = image_obj.size

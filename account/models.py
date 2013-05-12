@@ -27,5 +27,5 @@ class Avatar( models.Model ):
 	avatar_file_450 = models.ImageField( upload_to = AVATAR_DIR )
 	avatar_file_160 = models.ImageField( upload_to = AVATAR_DIR )
 	avatar_file_140 = models.ImageField( upload_to = AVATAR_DIR )
-	weibo_url = models.URLField( required = False )
+	weibo_url = models.URLField( null = True, blank = True )
 
