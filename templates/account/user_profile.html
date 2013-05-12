@@ -1,0 +1,27 @@
+<!doctype html>
+<html>
+	<head>
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+		<title>用户信息</title>
+		<link rel="shortcut icon" href="http://www.ermiao.com/media/favicon.ico" />
+		<script type="text/javascript" src="{{ STATIC_URL }}js/jquery-1.9.1.min.js"></script>
+	</head>
+
+	<body>
+		<table>
+			<tr>
+				<td><img src="{{ avatar_url }}" width="140" /></td>
+				<td>{{ account.username }}</td>
+			</tr>
+
+			{% if is_admin %}
+			<tr>
+				<td>
+					<span>作者已经将内容分享到<a href="{{ weibo_url }}" target="_blank">{{ weibo_url }}</a><span>
+				</td>
+				<td></td>
+			</tr>
+			{% endif %}
+		</table>
+	</body>
+</html>
